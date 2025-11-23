@@ -1,0 +1,323 @@
+// Prisma schema for CMMS backend
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// RBAC models
+model Role {
+  id        String           @id @default(cuid())
+  name      String           @unique
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  mappings  RolePermission[]
+}
+
+model Permission {
+  id        String           @id @default(cuid())
+  key       String           @unique
+  label     String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  mappings  RolePermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime   @default(now())
+
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model PushToken {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  token     String   @unique
+  platform  String?
+  createdAt DateTime @default(now())
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum WorkOrderStatus {
+  PENDING
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+}
+
+enum WorkOrderPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum MediaType {
+  AUDIO
+  PHOTO
+  VIDEO
+}
+
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+}
+
+enum AssetStatus {
+  ACTIVE
+  INACTIVE
+  OPERATIONAL
+  UNDER_MAINTENANCE
+  DECOMMISSIONED
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+// Status for Preventive Tasks
+enum PreventiveTaskStatus {
+  PENDING
+  COMPLETED
+  ERROR
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ResetTokenType {
+  PASSWORD
+  PIN
+}
+
+model User {
+  id             String            @id @default(cuid())
+  email          String?           @unique
+  passwordHash   String?
+  pinHash        String?
+  name           String?
+  role           String? // e.g., OPERATOR, SUPERVISOR
+  phone          String?           @unique
+  designation    String?
+  department     String?
+  status         UserStatus        @default(ACTIVE)
+  avatarUrl      String?
+  joinedDate     DateTime?
+  // Per-user permission overrides: { allow: string[], deny: string[] }
+  permissionOverrides Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  notifications  Notification[]
+  workOrders     WorkOrder[]       @relation("AssignedWorkOrders")
+  reports        BreakdownReport[]
+  refreshTokens  RefreshToken[]
+  resetTokens    ResetToken[]
+  OneTimeCode    OneTimeCode[]
+  PreventiveTask PreventiveTask[]
+  pushTokens     PushToken[]
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+}
+
+model Asset {
+  id               String      @id @default(cuid())
+  name             String
+  description      String?
+  manualUrl        String?
+  // Fields to align with frontend mock data
+  location         String?
+  purchaseDate     DateTime?
+  cost             Decimal?    @db.Decimal(12, 2)
+  warrantyExpiry   DateTime?
+  status           AssetStatus @default(OPERATIONAL)
+  lastMaintenance  DateTime?
+  installationDate DateTime?
+  category         String?
+  manufacturer     String?
+  model            String?
+  serialNumber     String?
+  // Optional GPS coordinates
+  latitude         Float?
+  longitude        Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  spareParts      SparePart[]
+  maintenanceLogs MaintenanceLog[]
+  preventiveTasks PreventiveTask[]
+  workOrders      WorkOrder[]
+  breakdowns      BreakdownReport[]
+}
+
+model PreventiveTask {
+  id             String    @id @default(cuid())
+  asset          Asset     @relation(fields: [assetId], references: [id])
+  assetId        String
+  title          String
+  description    String?
+  assignedToName String?
+  // New: Relational assignee reference
+  assignedTo     User?     @relation(fields: [assignedToId], references: [id])
+  assignedToId   String?
+  frequency      Frequency
+  category       String?
+  lastCompleted  DateTime?
+  nextDue        DateTime?
+  status         PreventiveTaskStatus @default(PENDING)
+  createdAt      DateTime  @default(now())
+}
+
+model SparePart {
+  id           String   @id @default(cuid())
+  asset        Asset?   @relation(fields: [assetId], references: [id])
+  assetId      String?
+  name         String
+  partNumber   String?
+  quantity     Int      @default(0)
+  reorderPoint Int      @default(0)
+  unitCost     Decimal? @db.Decimal(12, 2)
+  category     String?
+  supplier     String?
+  location     String?
+  image        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model MaintenanceLog {
+  id          String          @id @default(cuid())
+  asset       Asset           @relation(fields: [assetId], references: [id])
+  assetId     String
+  type        MaintenanceType
+  description String?
+  performedAt DateTime        @default(now())
+}
+
+model WorkOrder {
+  id             String            @id @default(cuid())
+  asset          Asset?            @relation(fields: [assetId], references: [id])
+  assetId        String?
+  // Denormalized display name for frontend (e.g., "Conveyor Motor CM-001")
+  assetName      String?
+  title          String
+  description    String?
+  status         WorkOrderStatus   @default(PENDING)
+  priority       WorkOrderPriority @default(MEDIUM)
+  assignedTo     User?             @relation("AssignedWorkOrders", fields: [assignedToId], references: [id])
+  assignedToId   String?
+  // Name-only assignment support for mock data
+  assignedToName String?
+  dueDate        DateTime?
+  startedAt      DateTime?
+  pausedAt       DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  issues         WorkOrderIssue[]
+}
+
+model WorkOrderIssue {
+  id          String      @id @default(cuid())
+  workOrder   WorkOrder   @relation(fields: [workOrderId], references: [id])
+  workOrderId String
+  description String?
+  createdAt   DateTime    @default(now())
+  mediaFiles  MediaFile[]
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  user      User?     @relation(fields: [userId], references: [id])
+  userId    String?
+  title     String
+  body      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model BreakdownReport {
+  id           String      @id @default(cuid())
+  asset        Asset?      @relation(fields: [assetId], references: [id])
+  assetId      String?
+  reportedBy   User?       @relation(fields: [reportedById], references: [id])
+  reportedById String?
+  title        String?
+  description  String?
+  createdAt    DateTime    @default(now())
+  mediaFiles   MediaFile[]
+}
+
+model MediaFile {
+  id                String           @id @default(cuid())
+  type              MediaType
+  path              String
+  mimeType          String?
+  breakdownReport   BreakdownReport? @relation(fields: [breakdownReportId], references: [id])
+  breakdownReportId String?
+  workOrderIssue    WorkOrderIssue?  @relation(fields: [workOrderIssueId], references: [id])
+  workOrderIssueId  String?
+  createdAt         DateTime         @default(now())
+}
+
+model ResetToken {
+  id        String         @id @default(cuid())
+  user      User           @relation(fields: [userId], references: [id])
+  userId    String
+  type      ResetTokenType
+  tokenHash String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime       @default(now())
+
+  @@index([userId, type, expiresAt])
+}
+
+enum OtpType {
+  LOGIN
+  PASSWORD
+  PIN
+}
+
+enum OtpChannel {
+  EMAIL
+  PHONE
+}
+
+model OneTimeCode {
+  id        String     @id @default(cuid())
+  user      User?      @relation(fields: [userId], references: [id])
+  userId    String?
+  target    String
+  channel   OtpChannel
+  type      OtpType
+  codeHash  String
+  attempts  Int        @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime   @default(now())
+
+  @@index([target, type, expiresAt])
+}

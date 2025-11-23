@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "847692968414",
+    "project_id": "factoryoperatorapp",
+    "storage_bucket": "factoryoperatorapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:847692968414:android:f1001f618c77ddcfc86d4f",
+        "android_client_info": {
+          "package_name": "com.anonymous.factoryoperatorapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMtd95uTXum_md7wqYbhR7iPqW99sTBEA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

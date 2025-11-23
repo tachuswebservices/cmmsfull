@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "DF Operator",
+    "slug": "factory-operator-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.factoryoperatorapp"
+    },
+    "android": {
+      "minSdkVersion": 28,   
+      "targetSdkVersion": 34, 
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.factoryoperatorapp",
+      "googleServicesFile": "google-services.json"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "24dc0540-1e6e-49c7-9f0b-ca9a83265f16"
+      }
+    },
+    "plugins": [
+      "expo-audio",
+      "expo-secure-store",
+      "expo-notifications"
+    ]
+  }
+}
