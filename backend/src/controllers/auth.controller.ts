@@ -12,7 +12,7 @@ async function findUserByContact(contact: string) {
   const isEmail = contact.includes('@');
   if (isEmail) {
     const email = contact.toLowerCase();
-    return prisma.user.findUnique({ where: { email } });
+    return prisma.user.findFirst({ where: { email } });
   }
   const digits = contact.replace(/\D/g, '');
   const last10 = digits.slice(-10);
@@ -179,7 +179,7 @@ export async function requestPasswordReset(req: Request, res: Response) {
   const { email } = req.body || {}
   if (!email) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'email is required' })
 
-  const user = await prisma.user.findUnique({ where: { email } })
+  const user = await prisma.user.findFirst({ where: { email } })
   // Always return success to avoid user enumeration
   if (!user) return res.status(StatusCodes.OK).json({ success: true })
 
@@ -223,7 +223,7 @@ export async function requestPinReset(req: Request, res: Response) {
   const { email } = req.body || {}
   if (!email) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'email is required' })
 
-  const user = await prisma.user.findUnique({ where: { email } })
+  const user = await prisma.user.findFirst({ where: { email } })
   if (!user) return res.status(StatusCodes.OK).json({ success: true })
 
   const tokenPlain = base64url(crypto.randomBytes(32))
