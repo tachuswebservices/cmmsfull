@@ -113,7 +113,8 @@ export async function login(req: Request, res: Response) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'email and password are required' })
     }
 
-    const user = await prisma.user.findUnique({ where: { email } })
+    const normalizedEmail = email.toLowerCase()
+    const user = await prisma.user.findFirst({ where: { email: normalizedEmail } })
     // Avoid leaking which part failed
     const ok = !!(user && user.passwordHash && verifySecret(password, user.passwordHash))
 

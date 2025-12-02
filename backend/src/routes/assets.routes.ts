@@ -9,6 +9,7 @@ router.get('/', authRequired, Assets.listAssets);
 router.post('/', authRequired, Assets.createAsset);
 router.get('/:id', authRequired, Assets.getAssetById);
 router.put('/:id', authRequired, Assets.updateAsset);
+router.delete('/:id', authRequired, Assets.deleteAsset);
 router.patch('/:id/status', authRequired, Assets.updateAssetStatus);
 router.get('/:id/history', authRequired, Assets.getAssetHistory);
 router.get('/:id/maintenance-logs', authRequired, Assets.getMaintenanceLogs);

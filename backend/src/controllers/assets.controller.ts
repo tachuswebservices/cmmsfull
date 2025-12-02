@@ -197,3 +197,47 @@ export async function deleteAssetAttachment(req: Request, res: Response) {
   return res.status(StatusCodes.OK).json({ assetId: id, filename })
 }
 
+export async function deleteAsset(req: Request, res: Response) {
+  const { id } = req.params
+
+  // Clean up attachments JSON and files on disk (best-effort)
+  const p = attachmentsJsonPath(id)
+  if (fs.existsSync(p)) {
+    try {
+      const raw = fs.readFileSync(p, 'utf-8')
+      const data = JSON.parse(raw)
+      const photos = (data.files?.photos || []) as any[]
+      const documents = (data.files?.documents || []) as any[]
+      const all = [...photos, ...documents]
+      for (const f of all) {
+        if (!f?.filename) continue
+        try {
+          const diskPath = path.join(paths.uploadDir, f.filename)
+          if (fs.existsSync(diskPath)) fs.unlinkSync(diskPath)
+        } catch {
+          // ignore per-file errors
+        }
+      }
+    } catch {
+      // ignore JSON parse errors
+    }
+    try {
+      fs.unlinkSync(p)
+    } catch {}
+  }
+
+  try {
+    await prisma.$transaction([
+      prisma.preventiveTask.deleteMany({ where: { assetId: id } }),
+      prisma.maintenanceLog.deleteMany({ where: { assetId: id } }),
+      prisma.sparePart.updateMany({ where: { assetId: id }, data: { assetId: null } }),
+      prisma.workOrder.updateMany({ where: { assetId: id }, data: { assetId: null } }),
+      prisma.breakdownReport.updateMany({ where: { assetId: id }, data: { assetId: null } }),
+      prisma.asset.delete({ where: { id } }),
+    ])
+    return res.status(StatusCodes.NO_CONTENT).send()
+  } catch (err) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Unable to delete asset' })
+  }
+}
+

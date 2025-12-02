@@ -170,4 +170,15 @@ export class AssetService {
     }
     return { success: true }
   }
+
+  static async deleteAsset(id: string) {
+    const res = await apiFetch(`/assets/${id}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      throw new Error(text || `Failed to delete asset (${res.status})`)
+    }
+    return { success: true }
+  }
 }

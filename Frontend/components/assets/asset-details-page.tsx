@@ -6,6 +6,17 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { AssetService } from '@/lib/services/asset-service'
 import { formatDateOnly } from '@/lib/utils'
 import { Info, MapPin, Wrench, Calendar, Pencil, FileText } from 'lucide-react'
@@ -61,6 +72,11 @@ export function AssetDetailsPage({ assetId }: { assetId: string }) {
 
   const statusVariant = asset.status === 'operational' ? 'default' : asset.status === 'decommissioned' ? 'destructive' : 'secondary'
   const statusLabel = asset.status === 'under-maintenance' ? 'under maintenance' : asset.status
+
+  const handleConfirmDelete = async () => {
+    await AssetService.deleteAsset(asset.id)
+    router.push('/assets')
+  }
 
   return (
     <div className="space-y-6">
@@ -180,23 +196,47 @@ export function AssetDetailsPage({ assetId }: { assetId: string }) {
       </Card>
 
       {canEditAssets && (
-        <div className="flex justify-end">
-          <Button onClick={() => setIsEditOpen(true)}>
-            <Pencil className="h-4 w-4 mr-2" />
-            Edit Asset
-          </Button>
-        </div>
-      )}
+        <>
+          <AlertDialog>
+            <div className="flex justify-end gap-2">
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  Delete Asset
+                </Button>
+              </AlertDialogTrigger>
+              <Button onClick={() => setIsEditOpen(true)}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit Asset
+              </Button>
+            </div>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete asset?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the asset and its related preventive maintenance tasks.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={handleConfirmDelete}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
-      {canEditAssets && (
-        <AddAssetForm
-          onAssetAdded={reload}
-          assetToEdit={asset}
-          open={isEditOpen}
-          onOpenChange={setIsEditOpen}
-        >
-          <></>
-        </AddAssetForm>
+          <AddAssetForm
+            onAssetAdded={reload}
+            assetToEdit={asset}
+            open={isEditOpen}
+            onOpenChange={setIsEditOpen}
+          >
+            <></>
+          </AddAssetForm>
+        </>
       )}
     </div>
   )
