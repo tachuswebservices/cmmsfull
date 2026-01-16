@@ -39,6 +39,7 @@ export function WorkOrderForm({ onSave, onCancel, workOrder }: WorkOrderFormProp
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState<Date | undefined>(new Date())
   const [priority, setPriority] = useState('medium')
+  const [status, setStatus] = useState('pending')
   const [workType, setWorkType] = useState('breakdown')
   const [assignedToId, setAssignedToId] = useState<string>('')
   const [assignedToName, setAssignedToName] = useState<string>('')
@@ -75,6 +76,7 @@ export function WorkOrderForm({ onSave, onCancel, workOrder }: WorkOrderFormProp
       setDescription(workOrder.description || '')
       setDueDate(workOrder.dueDate ? new Date(workOrder.dueDate) : new Date())
       setPriority(workOrder.priority || 'medium')
+      setStatus(workOrder.status || 'pending')
       setWorkType(workOrder.type || 'breakdown')
       // Prefill assignee if present
       setAssignedToId(workOrder.assignedToId || '')
@@ -213,7 +215,7 @@ export function WorkOrderForm({ onSave, onCancel, workOrder }: WorkOrderFormProp
       const baseData = {
         title: subject.trim(),
         description: description.trim(),
-        status: workOrder?.status || 'pending',
+        status: status,
         priority,
         // Keep backwards compatibility for any consumers
         assignedTo: assignedToName || '',
@@ -379,7 +381,7 @@ export function WorkOrderForm({ onSave, onCancel, workOrder }: WorkOrderFormProp
               <SelectTrigger>
                 <SelectValue placeholder="Select a user" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" side="bottom" sideOffset={4} className="max-h-56 overflow-auto z-[2000]">
                 {users.map(user => (
                   <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
                 ))}
@@ -399,7 +401,7 @@ export function WorkOrderForm({ onSave, onCancel, workOrder }: WorkOrderFormProp
               <SelectTrigger>
                 <SelectValue placeholder="Select an asset" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" side="bottom" sideOffset={4} className="max-h-56 overflow-auto z-[2000]">
                 {assets.map(a => (
                   <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                 ))}
@@ -425,7 +427,21 @@ export function WorkOrderForm({ onSave, onCancel, workOrder }: WorkOrderFormProp
         <div>
           <h3 className="text-base font-medium mb-2">Other Information</h3>
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs">Status</Label>
+                <Select value={status} onValueChange={setStatus}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-1">
                 <Label className="text-xs">Priority</Label>
                 <Select value={priority} onValueChange={setPriority}>

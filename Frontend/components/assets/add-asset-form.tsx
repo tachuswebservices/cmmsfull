@@ -522,7 +522,7 @@ export function AddAssetForm({ children, onAssetAdded, assetToEdit, open, onOpen
                               <SelectTrigger>
                                 <SelectValue placeholder="Select a user" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent position="popper" side="bottom" sideOffset={4} className="max-h-56 overflow-auto z-[2000]">
                                 {users.map(u => (
                                   <SelectItem key={u.id} value={u.name}>{u.name}</SelectItem>
                                 ))}
