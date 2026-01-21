@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { API_BASE, getAccessToken } from '@/lib/api'
 import { RbacConfigService } from '@/lib/services/rbac-config'
 import { setRolePermissionsMap } from '@/lib/rbac'
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [rbacReady, setRbacReady] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     const init = async () => {
@@ -66,6 +68,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     init()
   }, [])
+
+  // Listen for forced logout events from api layer
+  useEffect(() => {
+    const handler = () => {
+      logout()
+      try {
+        router.push('/login')
+      } catch {}
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('cmms-auth-logout', handler)
+      return () => window.removeEventListener('cmms-auth-logout', handler)
+    }
+  }, [router])
 
   const login = (userData: User, tokens?: { accessToken: string; refreshToken?: string }) => {
     setUser(userData)

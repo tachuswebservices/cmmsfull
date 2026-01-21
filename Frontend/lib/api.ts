@@ -61,6 +61,27 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
       if (!headers.has('Content-Type') && options.body && !isFormDataRetry) headers.set('Content-Type', 'application/json')
       headers.set('Authorization', `Bearer ${token}`)
       res = await fetch(`${API_BASE}${path}`, { ...options, headers })
+      // If still unauthorized after refresh, force logout and notify app
+      if (res.status === 401 || res.status === 403) {
+        try {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('cmms-user')
+            localStorage.removeItem('cmms-token')
+            localStorage.removeItem('cmms-refresh')
+            window.dispatchEvent(new Event('cmms-auth-logout'))
+          }
+        } catch {}
+      }
+    } else {
+      // No refresh available or failed: force logout and notify app
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('cmms-user')
+          localStorage.removeItem('cmms-token')
+          localStorage.removeItem('cmms-refresh')
+          window.dispatchEvent(new Event('cmms-auth-logout'))
+        }
+      } catch {}
     }
   }
 
