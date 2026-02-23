@@ -21,6 +21,7 @@ import { AssetService } from '@/lib/services/asset-service'
 import { formatDateOnly } from '@/lib/utils'
 import { Info, MapPin, Wrench, Calendar, Pencil, FileText } from 'lucide-react'
 import { AddAssetForm } from '@/components/assets/add-asset-form'
+import { PreventiveService } from '@/lib/services/preventive-service'
 import { API_BASE } from '@/lib/api'
 import { useCan } from '@/hooks/use-permissions'
 
@@ -30,6 +31,7 @@ export function AssetDetailsPage({ assetId }: { assetId: string }) {
   const [isLoading, setIsLoading] = useState(true)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [attachments, setAttachments] = useState<{ photos: any[]; documents: any[] }>({ photos: [], documents: [] })
+  const [pmTasks, setPmTasks] = useState<any[]>([])
   const canEditAssets = useCan('assets.edit')
 
   const reload = async () => {
@@ -41,6 +43,12 @@ export function AssetDetailsPage({ assetId }: { assetId: string }) {
       setAttachments(files)
     } catch {
       setAttachments({ photos: [], documents: [] })
+    }
+    try {
+      const tasks = await PreventiveService.list({ assetId })
+      setPmTasks(tasks)
+    } catch {
+      setPmTasks([])
     }
     setIsLoading(false)
   }
@@ -147,6 +155,53 @@ export function AssetDetailsPage({ assetId }: { assetId: string }) {
               <div className="grid grid-cols-2 gap-4">
                 <div><span className="font-semibold">Last Maintenance:</span> {formatDateOnly(asset.lastMaintenance)}</div>
               </div>
+            </div>
+
+            <Separator />
+
+            {/* Preventive Maintenance Tasks */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-slate-600" />
+                <h3 className="text-lg font-semibold">Preventive Maintenance</h3>
+              </div>
+              {pmTasks.length === 0 ? (
+                <p className="text-sm text-slate-600">No preventive maintenance tasks.</p>
+              ) : (
+                <div className="space-y-3">
+                  {pmTasks.map((t: any) => {
+                    const next = t.nextDue ? new Date(t.nextDue) : null
+                    const last = t.lastCompleted ? new Date(t.lastCompleted) : null
+                    const upcoming = next ? next.getTime() > Date.now() : false
+                    return (
+                      <div key={t.id} className="border rounded-md p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="space-y-1">
+                            <div className="font-medium">{t.title}</div>
+                            {t.description ? (
+                              <div className="text-sm text-slate-700">{t.description}</div>
+                            ) : null}
+                            <div className="text-xs text-slate-600 flex flex-wrap gap-x-4 gap-y-1">
+                              <span>Frequency: {String(t.frequency || '').toLowerCase()}</span>
+                              {t.category ? <span>Category: {t.category}</span> : null}
+                              {t.assignedToName ? (
+                                <span>Assigned: {t.assignedToName}</span>
+                              ) : null}
+                            </div>
+                            <div className="text-xs text-slate-600 flex flex-wrap gap-x-4 gap-y-1">
+                              <span>Last Done: {last ? last.toLocaleDateString() : '-'}</span>
+                              <span>Next Due: {next ? next.toLocaleDateString() : '-'}</span>
+                            </div>
+                          </div>
+                          <div className={`text-xs font-semibold ${upcoming ? 'text-green-600' : 'text-red-600'}`}>
+                            {upcoming ? 'Upcoming' : 'Overdue'}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             <Separator />

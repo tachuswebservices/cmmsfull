@@ -11,7 +11,13 @@ router.post('/', authRequired, upload.fields([
   { name: 'videos', maxCount: 5 }
 ]), Breakdown.submitBreakdownReport);
 
+// List breakdown reports, optionally filtered by assetId
+router.get('/', authRequired, Breakdown.listBreakdownReports);
+
 router.post('/transcribe', authRequired, upload.single('audio'), Breakdown.transcribeAudio);
+
+// Delete a breakdown report (and its media)
+router.delete('/:id', authRequired, Breakdown.deleteBreakdownReport);
 
 export default router;
 
