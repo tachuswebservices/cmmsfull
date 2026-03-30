@@ -1,39 +1,27 @@
 "use client"
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
 import { XCircle, ShieldCheck } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { UserService } from '@/lib/services/user-service'
-import { useAuth } from '@/components/providers/auth-provider'
 import { can, type Role } from '@/lib/rbac'
+import { useCan } from '@/hooks/use-permissions'
+import { TAB_PERMISSIONS } from '@/lib/tab-permissions-config'
 
 type Mode = 'inherit' | 'allow' | 'deny'
 type ModeGroup = { access?: Mode; add?: Mode; edit?: Mode }
 
-// Align with Roles & Permissions and AddUserForm
-const TAB_CFG: Record<string, { access?: string[]; accessAllowKey?: string; add?: string[]; edit?: string[] }> = {
-  Dashboard: { access: ['kpi.viewTeam', 'kpi.viewGlobal'], accessAllowKey: 'kpi.viewTeam' },
-  'Work Orders': { access: ['workOrders.request','workOrders.viewAll'], accessAllowKey: 'workOrders.viewAll', add: ['workOrders.create'], edit: ['workOrders.approve','workOrders.assign','workOrders.close'] },
-  Assets: { access: ['assets.view'], add: ['assets.edit'], edit: ['assets.edit'] },
-  Inventory: { access: ['inventory.request'], add: ['inventory.manage'], edit: ['inventory.manage'] },
-  Guide: { access: ['guide.view'] },
-  Reports: { access: ['downtime.analyzeTeam','downtime.analyzeCompany'] },
-  Users: { access: ['users.manageTeam'], add: ['users.manageAll'], edit: ['users.manageAll'] },
-  Settings: { access: ['users.manageTeam'], add: ['users.manageAll'], edit: ['users.manageAll'] },
-}
+const TAB_CFG = TAB_PERMISSIONS
 
 export function UserPermissionsEditor({ userId, baseRole, onRegisterOverridesGetter }: { userId?: string; baseRole: Role | string | undefined, onRegisterOverridesGetter?: (fn: () => { allow: string[]; deny: string[] }) => void }) {
   const { toast } = useToast()
-  const { user: current } = useAuth()
+  const canManageUsers = useCan('users.manageAll')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [modes, setModes] = useState<Record<string, ModeGroup>>({})
-
-  const isHighRole = (current?.role || '').toUpperCase() === 'MD' || (current?.role || '').toUpperCase() === 'COO'
 
   useEffect(() => {
     const init = async () => {
@@ -136,7 +124,7 @@ export function UserPermissionsEditor({ userId, baseRole, onRegisterOverridesGet
     }
   }
 
-  if (!isHighRole) return null
+  if (!canManageUsers) return null
   if (loading) return <Card><CardContent className="p-4 text-sm text-slate-600">Loading permissions…</CardContent></Card>
 
   return (

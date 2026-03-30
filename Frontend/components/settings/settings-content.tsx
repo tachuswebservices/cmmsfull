@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RbacConfigService } from '@/lib/services/rbac-config'
 import { setRolePermissionsMap } from '@/lib/rbac'
+import { TAB_PERMISSIONS } from '@/lib/tab-permissions-config'
 
 export function SettingsContent() {
   const [settings, setSettings] = useState<any>(null)
@@ -544,16 +545,12 @@ export function SettingsContent() {
                   )
                 }
 
-                const TAB_CFG: Array<{ name: string; access?: string | string[]; add?: string | string[]; edit?: string | string[] }> = [
-                  { name: 'Dashboard', access: ['kpi.viewTeam', 'kpi.viewGlobal'] },
-                  { name: 'Work Orders', access: ['workOrders.request', 'workOrders.viewAll'], add: 'workOrders.create', edit: ['workOrders.approve','workOrders.assign','workOrders.close'] },
-                  { name: 'Assets', access: 'assets.view', add: 'assets.create', edit: 'assets.edit' },
-                  { name: 'Inventory', access: 'inventory.request', add: 'inventory.create', edit: 'inventory.manage' },
-                  { name: 'Guide', access: 'guide.view' },
-                  { name: 'Reports', access: ['downtime.analyzeTeam','downtime.analyzeCompany'] },
-                  { name: 'Users', access: 'users.manageTeam', add: 'users.create', edit: 'users.manageAll' },
-                  { name: 'Settings', access: 'users.manageTeam', add: 'users.create', edit: 'users.manageAll' },
-                ]
+                const TAB_CFG = Object.entries(TAB_PERMISSIONS).map(([name, cfg]) => ({
+                  name,
+                  access: cfg.access,
+                  add: cfg.add,
+                  edit: cfg.edit,
+                }))
 
                 const hasAny = (keys?: string | string[]) => {
                   if (!keys) return false

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authRequired } from '../middlewares/auth';
 import * as Users from '../controllers/users.controller';
-import { requireOneOfRoles } from '../middlewares/roles';
+import { requirePermission } from '../middlewares/permissions';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
@@ -27,45 +27,19 @@ const upload = multer({ storage })
 
 router.get('/', authRequired, Users.listUsers);
 router.get('/:id', authRequired, Users.getUserById);
-// Only specific roles may manage users (team/global). Adjust as needed.
-router.post(
-  '/',
-  authRequired,
-  requireOneOfRoles(['MANAGER', 'MAINTENANCE_MANAGER', 'COO', 'MD', 'MASTER']),
-  Users.createUser
-);
-router.put(
-  '/:id',
-  authRequired,
-  requireOneOfRoles(['MANAGER', 'MAINTENANCE_MANAGER', 'COO', 'MD', 'MASTER']),
-  Users.updateUser
-);
-router.delete(
-  '/:id',
-  authRequired,
-  requireOneOfRoles(['MANAGER', 'MAINTENANCE_MANAGER', 'COO', 'MD', 'MASTER']),
-  Users.deleteUser
-);
+router.post('/', authRequired, requirePermission('users.create'), Users.createUser);
+router.put('/:id', authRequired, requirePermission('users.manageTeam'), Users.updateUser);
+router.delete('/:id', authRequired, requirePermission('users.manageAll'), Users.deleteUser);
 
 // Per-user permission overrides
-router.get(
-  '/:id/permissions',
-  authRequired,
-  requireOneOfRoles(['COO', 'MD', 'MASTER']),
-  Users.getUserPermissions
-);
-router.put(
-  '/:id/permissions',
-  authRequired,
-  requireOneOfRoles(['COO', 'MD', 'MASTER']),
-  Users.updateUserPermissions
-);
+router.get('/:id/permissions', authRequired, requirePermission('users.manageAll'), Users.getUserPermissions);
+router.put('/:id/permissions', authRequired, requirePermission('users.manageAll'), Users.updateUserPermissions);
 
 // Avatar upload
 router.post(
   '/:id/avatar',
   authRequired,
-  requireOneOfRoles(['MANAGER', 'MAINTENANCE_MANAGER', 'COO', 'MD', 'MASTER']),
+  requirePermission('users.manageTeam'),
   upload.single('avatar'),
   Users.uploadAvatar
 )

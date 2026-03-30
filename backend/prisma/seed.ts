@@ -51,7 +51,7 @@ async function main() {
     'users.manageTeam','users.manageAll','users.create',
     'audit.view','audit.maintain',
     // New: control access to Guide tab
-    'guide.view'
+    'guide.view','guide.create'
   ]
 
   // Upsert permissions
@@ -66,9 +66,9 @@ async function main() {
   // Default roles and their permissions
   const defaultRoles: Record<string, string[]> = {
     OPERATOR: ['workOrders.request','workOrders.updateStatus','workOrders.addNotes','assets.view','pm.view','breakdown.report','inventory.request','downtime.log','guide.view'],
-    MANAGER: ['workOrders.approve','workOrders.assign','workOrders.viewAll','assets.edit','assets.create','pm.manage','breakdown.view','inventory.manage','inventory.create','downtime.analyzeTeam','kpi.viewTeam','budget.view','users.manageTeam','audit.view','guide.view'],
+    MANAGER: ['workOrders.approve','workOrders.assign','workOrders.viewAll','assets.edit','assets.create','pm.manage','breakdown.view','inventory.manage','inventory.create','downtime.analyzeTeam','kpi.viewTeam','budget.view','users.manageTeam','audit.view','guide.view','guide.create'],
     PRODUCTION_MANAGER: ['workOrders.request','workOrders.viewAll','assets.view','pm.view','breakdown.view','inventory.request','downtime.analyzeTeam','kpi.viewTeam','budget.view','audit.view','guide.view'],
-    MAINTENANCE_MANAGER: ['workOrders.create','workOrders.approve','workOrders.assign','workOrders.close','workOrders.viewAll','assets.edit','assets.create','pm.manage','breakdown.view','inventory.manage','inventory.create','downtime.analyzeTeam','kpi.viewTeam','budget.inputMaintenanceCosts','users.manageTeam','audit.maintain','audit.view','guide.view'],
+    MAINTENANCE_MANAGER: ['workOrders.create','workOrders.approve','workOrders.assign','workOrders.close','workOrders.viewAll','assets.edit','assets.create','pm.manage','breakdown.view','inventory.manage','inventory.create','downtime.analyzeTeam','kpi.viewTeam','budget.inputMaintenanceCosts','users.manageTeam','audit.maintain','audit.view','guide.view','guide.create'],
     COO: ['workOrders.viewAll','assets.view','pm.view','breakdown.view','inventory.request','downtime.analyzeCompany','kpi.viewGlobal','budget.approve','users.manageTeam','audit.view','guide.view'],
     MD: ['workOrders.viewAll','assets.view','pm.view','breakdown.view','inventory.request','downtime.analyzeCompany','kpi.viewGlobal','budget.approve','users.manageAll','users.create','audit.view','guide.view'],
   }

@@ -36,25 +36,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (storedUser) {
         try { setUser(JSON.parse(storedUser)) } catch {}
       }
-      // Hydrate RBAC first so permission checks are accurate on first paint
-      try {
-        const roles = await RbacConfigService.getRoles()
-        const mapByName: Record<string, string[]> = {}
-        roles.forEach((r) => { mapByName[(r.name || '').toUpperCase()] = r.permissions || [] })
-        setRolePermissionsMap(mapByName as any)
-      } catch {
-        // ignore; map stays empty if backend unavailable
-      } finally {
-        setRbacReady(true)
-      }
 
-      // Then hydrate user profile if token exists
       const token = getAccessToken()
       if (token) {
+        // Fetch RBAC roles and user profile in parallel (both require auth)
         try {
-          const res = await fetch(`${API_BASE}/auth/profile`, { headers: { Authorization: `Bearer ${token}` } })
-          if (res.ok) {
-            const profile = await res.json()
+          const [roles, profileRes] = await Promise.all([
+            RbacConfigService.getRoles(),
+            fetch(`${API_BASE}/auth/profile`, { headers: { Authorization: `Bearer ${token}` } }),
+          ])
+          // Hydrate role → permissions map
+          const mapByName: Record<string, string[]> = {}
+          roles.forEach((r) => { mapByName[(r.name || '').toUpperCase()] = r.permissions || [] })
+          setRolePermissionsMap(mapByName as any)
+          // Hydrate user with permissionOverrides from profile
+          if (profileRes.ok) {
+            const profile = await profileRes.json()
             if (profile && profile.id) {
               const u = { id: profile.id, email: profile.email, name: profile.name, role: profile.role, permissionOverrides: profile.permissionOverrides }
               setUser(u)
@@ -64,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch {}
       }
 
+      setRbacReady(true)
       setIsLoading(false)
     }
     init()
@@ -84,21 +82,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router])
 
   const login = (userData: User, tokens?: { accessToken: string; refreshToken?: string }) => {
-    setUser(userData)
-    localStorage.setItem('cmms-user', JSON.stringify(userData))
+    // Store tokens first so apiFetch picks them up immediately
     try {
       if (tokens?.accessToken) localStorage.setItem('cmms-token', tokens.accessToken)
       if (tokens?.refreshToken) localStorage.setItem('cmms-refresh', tokens.refreshToken)
-    } catch {
-      // ignore storage errors
-    }
-    // Re-hydrate RBAC after login to ensure latest permissions map
+    } catch {}
+    setUser(userData)
+    localStorage.setItem('cmms-user', JSON.stringify(userData))
+    // Fetch RBAC roles and full profile (with permissionOverrides) in parallel
+    const accessToken = tokens?.accessToken || getAccessToken()
     ;(async () => {
       try {
-        const roles = await RbacConfigService.getRoles()
+        const [roles, profileRes] = await Promise.all([
+          RbacConfigService.getRoles(),
+          fetch(`${API_BASE}/auth/profile`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        ])
         const mapByName: Record<string, string[]> = {}
         roles.forEach((r) => { mapByName[(r.name || '').toUpperCase()] = r.permissions || [] })
         setRolePermissionsMap(mapByName as any)
+        if (profileRes.ok) {
+          const profile = await profileRes.json()
+          if (profile && profile.id) {
+            const u = { id: profile.id, email: profile.email, name: profile.name, role: profile.role, permissionOverrides: profile.permissionOverrides }
+            setUser(u)
+            localStorage.setItem('cmms-user', JSON.stringify(u))
+          }
+        }
       } catch {}
     })()
   }

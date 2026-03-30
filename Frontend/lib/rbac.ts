@@ -26,12 +26,11 @@ export function can(role: Role | string | undefined | null, permission: Permissi
   return Array.isArray(perms) ? perms.includes(permission) : false
 }
 
-export const ROLE_OPTIONS: { value: Role; label: string }[] = Object.keys(ROLE_PERMISSIONS).map((key) => ({
-  value: key,
-  label: key
-}))
+export function getRoleOptions(): { value: Role; label: string }[] {
+  return Object.keys(ROLE_PERMISSIONS).map((key) => ({ value: key, label: key }))
+}
 
 export function roleLabel(role?: string | null) {
-  const found = ROLE_OPTIONS.find(r => r.value === role)
+  const found = getRoleOptions().find(r => r.value === role)
   return found ? found.label : (role || 'Unknown')
 }

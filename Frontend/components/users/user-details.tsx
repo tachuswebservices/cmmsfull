@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UserService } from '@/lib/services/user-service'
 import { useToast } from '@/components/ui/use-toast'
 import { Edit, Camera, Check, Trash2 } from 'lucide-react'
-import { ROLE_OPTIONS, roleLabel, setRolePermissionsMap } from '@/lib/rbac'
+import { getRoleOptions, roleLabel, setRolePermissionsMap } from '@/lib/rbac'
 import { RbacConfigService } from '@/lib/services/rbac-config'
 import { useCan } from '@/hooks/use-permissions'
 import { UserPermissionsSummary } from '@/components/users/user-permissions-summary'
@@ -66,7 +66,7 @@ export function UserDetails({ user, onBack, onUserUpdated }: UserDetailsProps) {
   const roleOptions: Array<{ value: string; label: string }> =
     availableRoles.length > 0
       ? availableRoles.map((name) => ({ value: name, label: name }))
-      : ROLE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
+      : getRoleOptions().map((opt) => ({ value: opt.value, label: opt.label }))
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

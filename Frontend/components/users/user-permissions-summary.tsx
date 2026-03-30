@@ -4,17 +4,12 @@ import { useEffect, useState } from 'react'
 import { roleLabel, can, type Role } from '@/lib/rbac'
 import { Check, X } from 'lucide-react'
 import { UserService } from '@/lib/services/user-service'
+import { TAB_PERMISSIONS } from '@/lib/tab-permissions-config'
 
-const tabs = [
-  { name: 'Dashboard', anyOf: ['kpi.viewTeam', 'kpi.viewGlobal'] as const },
-  { name: 'Work Orders', anyOf: ['workOrders.request','workOrders.viewAll','workOrders.create','workOrders.approve','workOrders.assign','workOrders.close'] as const },
-  { name: 'Assets', anyOf: ['assets.view','assets.edit'] as const },
-  { name: 'Inventory', anyOf: ['inventory.request','inventory.manage'] as const },
-  { name: 'Guide', anyOf: ['guide.view'] as const },
-  { name: 'Reports', anyOf: ['downtime.analyzeTeam','downtime.analyzeCompany'] as const },
-  { name: 'Users', anyOf: ['users.manageTeam','users.manageAll'] as const },
-  { name: 'Settings', anyOf: ['users.manageTeam','users.manageAll'] as const },
-]
+const tabs = Object.entries(TAB_PERMISSIONS).map(([name, cfg]) => ({
+  name,
+  anyOf: [...(cfg.access || []), ...(cfg.add || []), ...(cfg.edit || [])] as string[],
+}))
 
 export function UserPermissionsSummary({ role, userId }: { role: Role | string | undefined; userId?: string }) {
   const r = (role || '').toUpperCase() as Role | string

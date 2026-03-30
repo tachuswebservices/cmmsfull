@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card'
 import { Search } from 'lucide-react'
 import { DocumentService, type Doc } from '@/lib/services/document-service'
 import { useToast } from '@/hooks/use-toast'
+import { useCan } from '@/hooks/use-permissions'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +33,7 @@ import { Textarea } from '@/components/ui/textarea'
 
 export default function GuidePage() {
   const { toast } = useToast()
+  const canAddDoc = useCan('guide.create')
   const [docs, setDocs] = useState<Doc[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [addOpen, setAddOpen] = useState(false)
@@ -70,10 +72,12 @@ export default function GuidePage() {
         <div className="w-full p-4 overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold">Documents</h1>
-            <Dialog open={addOpen} onOpenChange={setAddOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm">Add Document</Button>
-              </DialogTrigger>
+            <Dialog open={addOpen} onOpenChange={canAddDoc ? setAddOpen : undefined}>
+              {canAddDoc && (
+                <DialogTrigger asChild>
+                  <Button size="sm">Add Document</Button>
+                </DialogTrigger>
+              )}
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add Document</DialogTitle>

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserService } from '@/lib/services/user-service'
 import { useToast } from '@/components/ui/use-toast'
-import { ROLE_OPTIONS, setRolePermissionsMap } from '@/lib/rbac'
+import { getRoleOptions, setRolePermissionsMap } from '@/lib/rbac'
 import { RbacConfigService } from '@/lib/services/rbac-config'
 import { UserService as USvc } from '@/lib/services/user-service'
 import { API_BASE, getAccessToken } from '@/lib/api'
@@ -52,7 +52,7 @@ export function AddUserForm({ onUserAdded, onCancel }: AddUserFormProps) {
           setRole(names[0])
         }
       } catch {
-        // ignore; will fallback to ROLE_OPTIONS
+        // ignore; will fallback to getRoleOptions()
       }
     }
     loadRoles()
@@ -63,7 +63,7 @@ export function AddUserForm({ onUserAdded, onCancel }: AddUserFormProps) {
   const roleOptions: Array<{ value: string; label: string }> =
     availableRoles.length > 0
       ? availableRoles.map((name) => ({ value: name, label: name }))
-      : ROLE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
+      : getRoleOptions().map((opt) => ({ value: opt.value, label: opt.label }))
 
   // Permissions overrides will be edited via UserPermissionsEditor and retrieved on submit
 
