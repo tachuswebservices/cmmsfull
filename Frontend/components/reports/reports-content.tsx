@@ -183,99 +183,108 @@ export function ReportsContent({ embedded = false }: { embedded?: boolean }) {
       {/* Charts and Reports */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Maintenance Cost Trend */}
-        <Card className="bg-gradient-to-br from-amber-200 to-orange-300 border border-orange-300 ring-1 ring-orange-300 shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BarChart3 className="h-5 w-5" />
-              Maintenance Cost Trend
-            </CardTitle>
-            <CardDescription className="text-xs">Monthly maintenance expenses over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 bg-white/70 rounded-lg p-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={reportData?.maintenanceCostTrend || []} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="label" tick={{ fill: '#475569', fontSize: 12 }} axisLine={{ stroke: '#cbd5e1' }} tickLine={{ stroke: '#cbd5e1' }} />
-                  <YAxis tickFormatter={(v) => `₹${Math.round(v/1000)}k`} tick={{ fill: '#475569', fontSize: 12 }} axisLine={{ stroke: '#cbd5e1' }} tickLine={{ stroke: '#cbd5e1' }} />
-                  <Tooltip cursor={{ fill: 'rgba(148,163,184,0.15)' }} formatter={(value) => formatCurrency(Number(value))} contentStyle={{ borderRadius: 8 }} />
-                  <Bar dataKey="cost" name="Cost" fill="#fb923c" radius={[6,6,0,0]}>
-                    <LabelList dataKey="cost" position="top" formatter={(value: any) => formatINRShort(Number(value)) as any} fill="#334155" fontSize={11} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        {reportData?.maintenanceCostTrend && reportData.maintenanceCostTrend.length > 0 && (
+          <Card className="bg-gradient-to-br from-amber-200 to-orange-300 border border-orange-300 ring-1 ring-orange-300 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <BarChart3 className="h-5 w-5" />
+                Maintenance Cost Trend
+              </CardTitle>
+              <CardDescription className="text-xs">Monthly maintenance expenses over time</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 bg-white/70 rounded-lg p-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={reportData.maintenanceCostTrend} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis dataKey="label" tick={{ fill: '#475569', fontSize: 12 }} axisLine={{ stroke: '#cbd5e1' }} tickLine={{ stroke: '#cbd5e1' }} />
+                    <YAxis tickFormatter={(v) => `₹${Math.round(v/1000)}k`} tick={{ fill: '#475569', fontSize: 12 }} axisLine={{ stroke: '#cbd5e1' }} tickLine={{ stroke: '#cbd5e1' }} />
+                    <Tooltip cursor={{ fill: 'rgba(148,163,184,0.15)' }} formatter={(value) => formatCurrency(Number(value))} contentStyle={{ borderRadius: 8 }} />
+                    <Bar dataKey="cost" name="Cost" fill="#fb923c" radius={[6,6,0,0]}>
+                      <LabelList dataKey="cost" position="top" formatter={(value: any) => formatINRShort(Number(value)) as any} fill="#334155" fontSize={11} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Work Order Status */}
-        <Card className="bg-gradient-to-br from-emerald-200 to-green-300 border border-emerald-300 ring-1 ring-emerald-300 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base">Work Order Status Distribution</CardTitle>
-            <CardDescription className="text-xs">Current status of all work orders</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 bg-white/60 rounded-lg p-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Completed', value: reportData?.workOrderStatus?.completed || 0, color: '#22c55e' },
-                      { name: 'In Progress', value: reportData?.workOrderStatus?.inProgress || 0, color: '#3b82f6' },
-                      { name: 'Pending', value: reportData?.workOrderStatus?.pending || 0, color: '#f59e0b' },
-                    ]}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={48}
-                    outerRadius={80}
-                    paddingAngle={4}
-                    labelLine={false}
-                    label={({ name, value }) => `${value}`}
-                  >
-                    {[
-                      { name: 'Completed', color: '#22c55e' },
-                      { name: 'In Progress', color: '#3b82f6' },
-                      { name: 'Pending', color: '#f59e0b' },
-                    ].map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`${value}`, 'Count']} contentStyle={{ borderRadius: 8 }} />
-                  <Legend verticalAlign="bottom" height={24} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        {reportData?.workOrderStatus && 
+         (reportData.workOrderStatus.completed > 0 || 
+          reportData.workOrderStatus.inProgress > 0 || 
+          reportData.workOrderStatus.pending > 0) && (
+          <Card className="bg-gradient-to-br from-emerald-200 to-green-300 border border-emerald-300 ring-1 ring-emerald-300 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base">Work Order Status Distribution</CardTitle>
+              <CardDescription className="text-xs">Current status of all work orders</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 bg-white/60 rounded-lg p-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Completed', value: reportData.workOrderStatus.completed, color: '#22c55e' },
+                        { name: 'In Progress', value: reportData.workOrderStatus.inProgress, color: '#3b82f6' },
+                        { name: 'Pending', value: reportData.workOrderStatus.pending, color: '#f59e0b' },
+                      ]}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={48}
+                      outerRadius={80}
+                      paddingAngle={4}
+                      labelLine={false}
+                      label={({ name, value }) => `${value}`}
+                    >
+                      {[
+                        { name: 'Completed', color: '#22c55e' },
+                        { name: 'In Progress', color: '#3b82f6' },
+                        { name: 'Pending', color: '#f59e0b' },
+                      ].map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`${value}`, 'Count']} contentStyle={{ borderRadius: 8 }} />
+                    <Legend verticalAlign="bottom" height={24} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
 
         {/* Maintenance Categories */}
-        <Card className="bg-gradient-to-br from-violet-200 to-purple-300 border border-violet-300 ring-1 ring-violet-300 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base">Maintenance by Category</CardTitle>
-            <CardDescription className="text-xs">Breakdown of maintenance activities</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {reportData?.maintenanceCategories?.map((category: any, index: number) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{category.name}</span>
-                    <span className="font-medium">{category.percentage}%</span>
+        {reportData?.maintenanceCategories && reportData.maintenanceCategories.length > 0 && (
+          <Card className="bg-gradient-to-br from-violet-200 to-purple-300 border border-violet-300 ring-1 ring-violet-300 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base">Maintenance by Category</CardTitle>
+              <CardDescription className="text-xs">Breakdown of maintenance activities</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {reportData.maintenanceCategories.map((category: any, index: number) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>{category.name}</span>
+                      <span className="font-medium">{category.percentage}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${getCategoryColor(category.name)}`}
+                        style={{ width: `${category.percentage}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full ${getCategoryColor(category.name)}`}
-                      style={{ width: `${category.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

@@ -10,7 +10,6 @@ import { DashboardService } from '@/lib/services/dashboard-service'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { ReportsContent } from '@/components/reports/reports-content'
-import { MissedPmList } from '@/components/maintenance/missed-pm-list'
 import { apiFetch } from '@/lib/api'
 import { toast } from '@/hooks/use-toast'
 
@@ -288,20 +287,18 @@ export function DashboardContent() {
         </Card>
       </div>
 
-      {/* Missed Preventive Maintenance (admin-only) */}
-      <MissedPmList />
-
       {/* Alerts & Notifications */}
-      <Card className="bg-gradient-to-br from-orange-200 to-amber-300 border border-orange-400">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
-            Alerts & Notifications
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {dashboardData?.alerts?.map((alert: any, index: number) => (
+      {dashboardData?.alerts && dashboardData.alerts.length > 0 && (
+        <Card className="bg-gradient-to-br from-orange-200 to-amber-300 border border-orange-400">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-600" />
+              Alerts & Notifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {dashboardData.alerts.map((alert: any, index: number) => (
               <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-br from-orange-200 to-amber-300 border border-orange-400 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                 <div className={`${alert.priority === 'high' ? 'bg-red-400' : alert.priority === 'medium' ? 'bg-amber-400' : 'bg-emerald-400'} w-1 rounded-full self-stretch`} />
                 <div className="flex items-center gap-3">
@@ -316,9 +313,10 @@ export function DashboardContent() {
                 </Badge>
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
     <style jsx>{`
       .moving { animation: scroll-vert 22s linear infinite; }

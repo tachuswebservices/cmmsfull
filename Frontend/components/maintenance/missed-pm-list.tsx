@@ -47,6 +47,9 @@ export function MissedPmList() {
 
   if (!canView) return null
 
+  // Don't show anything if not loading and no items
+  if (!loading && items.length === 0) return null
+
   if (loading) {
     return (
       <Card className="border-rose-200">
@@ -77,11 +80,8 @@ export function MissedPmList() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {items.length === 0 ? (
-          <p className="text-sm text-slate-600">No missed preventive maintenance records.</p>
-        ) : (
-          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-            {items.map((item) => {
+        <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+          {items.map((item) => {
               const scheduled = new Date(item.scheduledDate)
               const isResolved = item.status === 'COMPLETED_LATE'
               return (
@@ -130,7 +130,6 @@ export function MissedPmList() {
               )
             })}
           </div>
-        )}
       </CardContent>
     </Card>
   )
