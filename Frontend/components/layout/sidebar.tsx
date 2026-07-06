@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, ClipboardList, Package, Boxes, BarChart3, Users, Settings, Wrench } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, Package, Boxes, BarChart3, Users, Settings, Wrench, AlertTriangle } from 'lucide-react'
 import Image from 'next/image'
 import { useHasAny } from '@/hooks/use-permissions'
 
@@ -11,6 +11,7 @@ const navigation = [
   { name: 'Work Orders', href: '/work-orders', icon: ClipboardList, anyOf: ['workOrders.request','workOrders.viewAll','workOrders.create','workOrders.approve','workOrders.assign','workOrders.close'] },
   { name: 'Asset Management', href: '/assets', icon: Package, anyOf: ['assets.view','assets.edit'] },
   { name: 'Inventory', href: '/inventory', icon: Boxes, anyOf: ['inventory.request','inventory.manage'] },
+  { name: 'Missed PM', href: '/missed-pm', icon: AlertTriangle, anyOf: ['kpi.viewGlobal'] },
   // Guide is visible to all authenticated users; no permissions required
   { name: 'Guide', href: '/guide', icon: Wrench },
   { name: 'Reports & Analytics', href: '/reports', icon: BarChart3, anyOf: ['downtime.analyzeTeam','downtime.analyzeCompany'] },
@@ -24,6 +25,7 @@ export function Sidebar() {
   const canWO = useHasAny(['workOrders.request','workOrders.viewAll','workOrders.create','workOrders.approve','workOrders.assign','workOrders.close'])
   const canAssets = useHasAny(['assets.view','assets.edit'])
   const canInventory = useHasAny(['inventory.request','inventory.manage'])
+  const canMissedPm = useHasAny(['kpi.viewGlobal'])
   const canReports = useHasAny(['downtime.analyzeTeam','downtime.analyzeCompany'])
   const canUsers = useHasAny(['users.manageTeam','users.manageAll'])
   const canSettings = useHasAny(['users.manageTeam','users.manageAll'])
@@ -51,6 +53,7 @@ export function Sidebar() {
               (item.href === '/work-orders' && canWO) ||
               (item.href === '/assets' && canAssets) ||
               (item.href === '/inventory' && canInventory) ||
+              (item.href === '/missed-pm' && canMissedPm) ||
               (item.href === '/reports' && canReports) ||
               (item.href === '/users' && canUsers) ||
               (item.href === '/settings' && canSettings)

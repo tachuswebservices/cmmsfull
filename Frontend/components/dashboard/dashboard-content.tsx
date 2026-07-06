@@ -10,6 +10,7 @@ import { DashboardService } from '@/lib/services/dashboard-service'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { ReportsContent } from '@/components/reports/reports-content'
+import { MissedPmList } from '@/components/maintenance/missed-pm-list'
 import { apiFetch } from '@/lib/api'
 import { toast } from '@/hooks/use-toast'
 
@@ -286,6 +287,9 @@ export function DashboardContent() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Missed Preventive Maintenance (admin-only) */}
+      <MissedPmList />
 
       {/* Alerts & Notifications */}
       <Card className="bg-gradient-to-br from-orange-200 to-amber-300 border border-orange-400">

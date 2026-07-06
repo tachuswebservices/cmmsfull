@@ -168,26 +168,51 @@ model Asset {
   spareParts      SparePart[]
   maintenanceLogs MaintenanceLog[]
   preventiveTasks PreventiveTask[]
+  missedPreventiveTasks MissedPreventiveTask[]
   workOrders      WorkOrder[]
   breakdowns      BreakdownReport[]
 }
 
 model PreventiveTask {
-  id             String    @id @default(cuid())
-  asset          Asset     @relation(fields: [assetId], references: [id])
+  id             String                @id @default(cuid())
+  asset          Asset                 @relation(fields: [assetId], references: [id])
   assetId        String
   title          String
   description    String?
   assignedToName String?
   // New: Relational assignee reference
-  assignedTo     User?     @relation(fields: [assignedToId], references: [id])
+  assignedTo     User?                 @relation(fields: [assignedToId], references: [id])
   assignedToId   String?
   frequency      Frequency
   category       String?
   lastCompleted  DateTime?
   nextDue        DateTime?
-  status         PreventiveTaskStatus @default(PENDING)
+  status         PreventiveTaskStatus  @default(PENDING)
+  createdAt      DateTime              @default(now())
+  missedRuns     MissedPreventiveTask[]
+}
+
+model MissedPreventiveTask {
+  id             String    @id @default(cuid())
+  task           PreventiveTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId         String
+  asset          Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assetId        String
+  title          String
+  description    String?
+  assignedToName String?
+  assignedToId   String?
+  frequency      Frequency
+  scheduledDate  DateTime  // the date that was missed (start of day)
+  reason         String?   // optional reason or note
+  status         String    @default("MISSED") // MISSED | COMPLETED_LATE
   createdAt      DateTime  @default(now())
+  resolvedAt     DateTime?
+
+  @@unique([taskId, scheduledDate])
+  @@index([scheduledDate])
+  @@index([assetId])
+  @@index([assignedToId])
 }
 
 model SparePart {

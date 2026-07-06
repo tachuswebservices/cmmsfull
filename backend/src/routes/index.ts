@@ -8,6 +8,7 @@ import inventoryRoutes from './inventory.routes';
 import usersRoutes from './users.routes';
 import documentsRoutes from './documents.routes';
 import preventiveRoutes from './preventive.routes';
+import missedPmRoutes from './missed-pm.routes';
 import rbacRoutes from './rbac.routes';
 
 const router = Router();
@@ -21,6 +22,7 @@ router.use('/inventory', inventoryRoutes);
 router.use('/users', usersRoutes);
 router.use('/documents', documentsRoutes);
 router.use('/preventive-tasks', preventiveRoutes);
+router.use('/missed-pm', missedPmRoutes);
 router.use('/rbac', rbacRoutes);
 
 export default router;

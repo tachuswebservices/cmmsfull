@@ -2,6 +2,7 @@ import http from 'http';
 import app from './app';
 import { env } from './config/env';
 import { initPrisma, shutdownPrisma } from './services/prisma';
+import { startPmMissedCron } from './services/pm-missed.service';
 
 const server = http.createServer(app);
 
@@ -24,6 +25,9 @@ async function start() {
       // eslint-disable-next-line no-console
       console.log(`API server listening on http://${env.NODE_IP}:${env.PORT}`);
     });
+
+    // Start background cron jobs after the server is up
+    startPmMissedCron();
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('Failed to start server', err);
